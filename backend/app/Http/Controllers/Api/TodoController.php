@@ -9,11 +9,23 @@ use Illuminate\Http\Request;
 class TodoController extends Controller
 {
     /**
-     * 一覧取得
+     * 一覧取得（検索・絞り込み対応）
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Todo::orderBy('created_at', 'desc')->get();
+        $query = Todo::query();
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->input('search') . '%');
+        }
+
+        if ($request->input('status') === 'done') {
+            $query->where('is_done', true);
+        } elseif ($request->input('status') === 'undone') {
+            $query->where('is_done', false);
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     /**
