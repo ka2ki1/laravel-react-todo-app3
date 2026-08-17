@@ -45,3 +45,15 @@
   align-items: center;
   gap: 8px;
 }
+
+.todo-app .filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.todo-app .filters input,
+.todo-app .filters select {
+  padding: 6px;
+  font-size: 14px;
+}
