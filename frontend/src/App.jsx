@@ -5,13 +5,18 @@ import './App.css'
 function App() {
   const [todos, setTodos] = useState([])
   const [title, setTitle] = useState('')
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('all')
 
   useEffect(() => {
     loadTodos()
-  }, [])
+  }, [search, status])
 
   async function loadTodos() {
-    const data = await fetchTodos()
+    const params = {}
+    if (search) params.search = search
+    if (status !== 'all') params.status = status
+    const data = await fetchTodos(params)
     setTodos(data)
   }
 
@@ -46,6 +51,20 @@ function App() {
         />
         <button type="submit">追加</button>
       </form>
+
+      <div className="filters">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="タイトルで検索"
+        />
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="all">すべて</option>
+          <option value="undone">未完了</option>
+          <option value="done">完了</option>
+        </select>
+      </div>
 
       <ul>
         {todos.map((todo) => (

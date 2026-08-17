@@ -1,7 +1,9 @@
 const API_BASE = 'http://localhost:8000/api';
 
-export async function fetchTodos() {
-  const res = await fetch(`${API_BASE}/todos`);
+export async function fetchTodos(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  const url = query ? `${API_BASE}/todos?${query}` : `${API_BASE}/todos`;
+  const res = await fetch(url);
   return res.json();
 }
 
