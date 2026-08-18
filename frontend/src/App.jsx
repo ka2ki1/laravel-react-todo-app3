@@ -7,40 +7,67 @@ function App() {
   const [title, setTitle] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     loadTodos()
   }, [search, status])
 
   async function loadTodos() {
-    const params = {}
-    if (search) params.search = search
-    if (status !== 'all') params.status = status
-    const data = await fetchTodos(params)
-    setTodos(data)
+    try {
+      const params = {}
+      if (search) params.search = search
+      if (status !== 'all') params.status = status
+      const data = await fetchTodos(params)
+      setTodos(data)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!title.trim()) return
-    await createTodo(title)
-    setTitle('')
-    loadTodos()
+    setError('')
+
+    if (!title.trim()) {
+      setError('タイトルを入力してください')
+      return
+    }
+
+    try {
+      await createTodo(title)
+      setTitle('')
+      loadTodos()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   async function handleToggle(todo) {
-    await updateTodo(todo.id, { is_done: !todo.is_done })
-    loadTodos()
+    setError('')
+    try {
+      await updateTodo(todo.id, { is_done: !todo.is_done })
+      loadTodos()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   async function handleDelete(id) {
-    await deleteTodo(id)
-    loadTodos()
+    setError('')
+    try {
+      await deleteTodo(id)
+      loadTodos()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   return (
     <div className="todo-app">
       <h1>ToDoリスト</h1>
+
+      {error && <p className="error-message">{error}</p>}
 
       <form onSubmit={handleAdd}>
         <input
