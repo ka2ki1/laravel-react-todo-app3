@@ -57,3 +57,11 @@
   padding: 6px;
   font-size: 14px;
 }
+
+.todo-app .error-message {
+  color: #d32f2f;
+  background: #fdecea;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
