@@ -1,10 +1,7 @@
 <?php
-
 namespace Database\Factories;
-
 use App\Models\Todo;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
 /**
  * @extends Factory<Todo>
  */
@@ -32,5 +29,15 @@ class TodoFactory extends Factory
             ]),
             'is_done' => false,
         ];
+    }
+
+    /**
+     * 完了済みのTodoを作る状態
+     */
+    public function done(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_done' => true,
+        ]);
     }
 }
