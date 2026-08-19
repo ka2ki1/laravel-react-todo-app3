@@ -18,7 +18,18 @@ class TodoFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(3),
+            'title' => $this->faker->randomElement([
+                '牛乳を買う',
+                'レポートを書く',
+                '掃除をする',
+                'メールを返信する',
+                '本を返却する',
+                '歯医者の予約をする',
+                '洗濯をする',
+                '会議の資料を作る',
+                'ジムに行く',
+                '請求書を確認する',
+            ]),
             'is_done' => false,
         ];
     }
