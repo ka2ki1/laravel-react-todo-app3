@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react'
 import { fetchTodos, createTodo, updateTodo, deleteTodo } from './api/todos'
 import './App.css'
+
+const CATEGORIES = ['仕事', 'プライベート', '買い物', 'その他']
+
 function App() {
   const [todos, setTodos] = useState([])
   const [title, setTitle] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [error, setError] = useState('')
   useEffect(() => {
     loadTodos()
-  }, [search, status])
+  }, [search, status, categoryFilter])
   async function loadTodos() {
     try {
       const params = {}
       if (search) params.search = search
       if (status !== 'all') params.status = status
+      if (categoryFilter !== 'all') params.category = categoryFilter
       const data = await fetchTodos(params)
       setTodos(data)
     } catch (err) {
@@ -30,9 +36,10 @@ function App() {
       return
     }
     try {
-      await createTodo(title, dueDate)
+      await createTodo(title, dueDate, category)
       setTitle('')
       setDueDate('')
+      setCategory('')
       loadTodos()
     } catch (err) {
       setError(err.message)
@@ -72,6 +79,12 @@ function App() {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="">カテゴリなし</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
         <button type="submit">追加</button>
       </form>
       <div className="filters">
@@ -85,6 +98,12 @@ function App() {
           <option value="all">すべて</option>
           <option value="undone">未完了</option>
           <option value="done">完了</option>
+        </select>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <option value="all">すべてのカテゴリ</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
       </div>
       <ul>
@@ -100,9 +119,12 @@ function App() {
                 {todo.title}
               </span>
             </label>
-            {todo.due_date && (
-              <span className="due-date">期限: {todo.due_date.slice(0, 10)}</span>
-            )}
+            <div className="todo-meta">
+              {todo.category && <span className="category-badge">{todo.category}</span>}
+              {todo.due_date && (
+                <span className="due-date">期限: {todo.due_date.slice(0, 10)}</span>
+              )}
+            </div>
             <button onClick={() => handleDelete(todo.id)}>削除</button>
           </li>
         ))}

@@ -5,5 +5,5 @@ use Illuminate\Database\Eloquent\Model;
 class Todo extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'is_done', 'due_date'];
+    protected $fillable = ['title', 'is_done', 'due_date', 'category'];
 }

@@ -22,6 +22,10 @@ class TodoController extends Controller
             $query->where('is_done', false);
         }
 
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
         return $query->orderBy('created_at', 'desc')->get();
     }
 
@@ -30,6 +34,7 @@ class TodoController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'due_date' => 'nullable|date',
+            'category' => 'nullable|string|max:50',
         ]);
 
         $todo = Todo::create($validated);
@@ -48,6 +53,7 @@ class TodoController extends Controller
             'title' => 'sometimes|string|max:255',
             'is_done' => 'sometimes|boolean',
             'due_date' => 'nullable|date',
+            'category' => 'nullable|string|max:50',
         ]);
 
         $todo->update($validated);

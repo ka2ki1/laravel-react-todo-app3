@@ -44,6 +44,27 @@ class TodoApiTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['due_date']);
     }
+    public function test_カテゴリ付きで作成できる(): void
+    {
+        $response = $this->postJson('/api/todos', [
+            'title' => '企画書を書く',
+            'category' => '仕事',
+        ]);
+        $response->assertStatus(201);
+        $response->assertJsonFragment(['title' => '企画書を書く', 'category' => '仕事']);
+        $this->assertDatabaseHas('todos', [
+            'title' => '企画書を書く',
+            'category' => '仕事',
+        ]);
+    }
+    public function test_カテゴリで絞り込める(): void
+    {
+        Todo::factory()->count(2)->create(['category' => '仕事']);
+        Todo::factory()->count(3)->create(['category' => 'プライベート']);
+        $response = $this->getJson('/api/todos?category=仕事');
+        $response->assertStatus(200);
+        $response->assertJsonCount(2);
+    }
     public function test_タイトルが空だとエラーになる(): void
     {
         $response = $this->postJson('/api/todos', [

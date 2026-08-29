@@ -12,11 +12,11 @@ export async function fetchTodos(params = {}) {
   const res = await fetch(url);
   return handleResponse(res);
 }
-export async function createTodo(title, dueDate) {
+export async function createTodo(title, dueDate, category) {
   const res = await fetch(`${API_BASE}/todos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, due_date: dueDate || null }),
+    body: JSON.stringify({ title, due_date: dueDate || null, category: category || null }),
   });
   return handleResponse(res);
 }
