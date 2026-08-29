@@ -22,6 +22,28 @@ class TodoApiTest extends TestCase
         $response->assertJsonFragment(['title' => '牛乳を買う']);
         $this->assertDatabaseHas('todos', ['title' => '牛乳を買う']);
     }
+    public function test_期限日付きで作成できる(): void
+    {
+        $response = $this->postJson('/api/todos', [
+            'title' => 'レポート提出',
+            'due_date' => '2026-09-01',
+        ]);
+        $response->assertStatus(201);
+        $response->assertJsonFragment(['title' => 'レポート提出']);
+        $this->assertDatabaseHas('todos', [
+            'title' => 'レポート提出',
+            'due_date' => '2026-09-01',
+        ]);
+    }
+    public function test_期限日が不正な形式だとエラーになる(): void
+    {
+        $response = $this->postJson('/api/todos', [
+            'title' => 'テスト',
+            'due_date' => 'not-a-date',
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['due_date']);
+    }
     public function test_タイトルが空だとエラーになる(): void
     {
         $response = $this->postJson('/api/todos', [

@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 
 class TodoController extends Controller
 {
-    /**
-     * 一覧取得（検索・絞り込み対応）
-     */
     public function index(Request $request)
     {
         $query = Todo::query();
@@ -28,13 +25,11 @@ class TodoController extends Controller
         return $query->orderBy('created_at', 'desc')->get();
     }
 
-    /**
-     * 新規作成
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'due_date' => 'nullable|date',
         ]);
 
         $todo = Todo::create($validated);
@@ -42,22 +37,17 @@ class TodoController extends Controller
         return response()->json($todo, 201);
     }
 
-    /**
-     * 詳細取得（今回は未使用）
-     */
     public function show(Todo $todo)
     {
         //
     }
 
-    /**
-     * 更新（完了フラグの切り替えなど）
-     */
     public function update(Request $request, Todo $todo)
     {
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'is_done' => 'sometimes|boolean',
+            'due_date' => 'nullable|date',
         ]);
 
         $todo->update($validated);
@@ -65,9 +55,6 @@ class TodoController extends Controller
         return response()->json($todo);
     }
 
-    /**
-     * 削除
-     */
     public function destroy(Todo $todo)
     {
         $todo->delete();

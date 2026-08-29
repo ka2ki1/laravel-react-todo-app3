@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react'
 import { fetchTodos, createTodo, updateTodo, deleteTodo } from './api/todos'
 import './App.css'
-
 function App() {
   const [todos, setTodos] = useState([])
   const [title, setTitle] = useState('')
+  const [dueDate, setDueDate] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [error, setError] = useState('')
-
   useEffect(() => {
     loadTodos()
   }, [search, status])
-
   async function loadTodos() {
     try {
       const params = {}
@@ -24,25 +22,22 @@ function App() {
       setError(err.message)
     }
   }
-
   async function handleAdd(e) {
     e.preventDefault()
     setError('')
-
     if (!title.trim()) {
       setError('タイトルを入力してください')
       return
     }
-
     try {
-      await createTodo(title)
+      await createTodo(title, dueDate)
       setTitle('')
+      setDueDate('')
       loadTodos()
     } catch (err) {
       setError(err.message)
     }
   }
-
   async function handleToggle(todo) {
     setError('')
     try {
@@ -52,7 +47,6 @@ function App() {
       setError(err.message)
     }
   }
-
   async function handleDelete(id) {
     setError('')
     try {
@@ -62,13 +56,10 @@ function App() {
       setError(err.message)
     }
   }
-
   return (
     <div className="todo-app">
       <h1>ToDoリスト</h1>
-
       {error && <p className="error-message">{error}</p>}
-
       <form onSubmit={handleAdd}>
         <input
           type="text"
@@ -76,9 +67,13 @@ function App() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="やることを入力"
         />
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
         <button type="submit">追加</button>
       </form>
-
       <div className="filters">
         <input
           type="text"
@@ -92,7 +87,6 @@ function App() {
           <option value="done">完了</option>
         </select>
       </div>
-
       <ul>
         {todos.map((todo) => (
           <li key={todo.id}>
@@ -106,6 +100,9 @@ function App() {
                 {todo.title}
               </span>
             </label>
+            {todo.due_date && (
+              <span className="due-date">期限: {todo.due_date.slice(0, 10)}</span>
+            )}
             <button onClick={() => handleDelete(todo.id)}>削除</button>
           </li>
         ))}
@@ -113,5 +110,4 @@ function App() {
     </div>
   )
 }
-
 export default App
