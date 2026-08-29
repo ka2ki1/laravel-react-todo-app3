@@ -1,5 +1,4 @@
 const API_BASE = `http://${window.location.hostname}:8010/api`;
-
 async function handleResponse(res) {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -7,23 +6,20 @@ async function handleResponse(res) {
   }
   return res.json();
 }
-
 export async function fetchTodos(params = {}) {
   const query = new URLSearchParams(params).toString();
   const url = query ? `${API_BASE}/todos?${query}` : `${API_BASE}/todos`;
   const res = await fetch(url);
   return handleResponse(res);
 }
-
-export async function createTodo(title) {
+export async function createTodo(title, dueDate) {
   const res = await fetch(`${API_BASE}/todos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title }),
+    body: JSON.stringify({ title, due_date: dueDate || null }),
   });
   return handleResponse(res);
 }
-
 export async function updateTodo(id, data) {
   const res = await fetch(`${API_BASE}/todos/${id}`, {
     method: 'PUT',
@@ -32,7 +28,6 @@ export async function updateTodo(id, data) {
   });
   return handleResponse(res);
 }
-
 export async function deleteTodo(id) {
   const res = await fetch(`${API_BASE}/todos/${id}`, { method: 'DELETE' });
   if (!res.ok) {
