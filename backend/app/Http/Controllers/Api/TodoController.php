@@ -67,4 +67,16 @@ class TodoController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:todos,id',
+        ]);
+
+        Todo::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json(null, 204);
+    }
 }
