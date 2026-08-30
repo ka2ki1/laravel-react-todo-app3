@@ -89,6 +89,28 @@ class TodoApiTest extends TestCase
         $response->assertStatus(204);
         $this->assertDatabaseMissing('todos', ['id' => $todo->id]);
     }
+    public function test_複数選択して一括削除できる(): void
+    {
+        $todos = Todo::factory()->count(3)->create();
+        $ids = $todos->pluck('id')->take(2)->toArray();
+
+        $response = $this->deleteJson('/api/todos/bulk-delete', ['ids' => $ids]);
+
+        $response->assertStatus(204);
+        foreach ($ids as $id) {
+            $this->assertDatabaseMissing('todos', ['id' => $id]);
+        }
+        $this->assertDatabaseCount('todos', 1);
+    }
+    public function test_存在しないidを含む一括削除はエラーになる(): void
+    {
+        $todo = Todo::factory()->create();
+
+        $response = $this->deleteJson('/api/todos/bulk-delete', ['ids' => [$todo->id, 99999]]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['ids.1']);
+    }
     public function test_タイトルで検索できる(): void
     {
         Todo::factory()->create(['title' => '牛乳を買う']);

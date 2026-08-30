@@ -34,3 +34,13 @@ export async function deleteTodo(id) {
     throw new Error('削除に失敗しました');
   }
 }
+export async function bulkDeleteTodos(ids) {
+  const res = await fetch(`${API_BASE}/todos/bulk-delete`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) {
+    throw new Error('一括削除に失敗しました');
+  }
+}

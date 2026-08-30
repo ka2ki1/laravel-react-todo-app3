@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchTodos, createTodo, updateTodo, deleteTodo } from './api/todos'
+import { fetchTodos, createTodo, updateTodo, deleteTodo, bulkDeleteTodos } from './api/todos'
 
 const CATEGORIES = ['仕事', 'プライベート', '買い物', 'その他']
 
@@ -19,6 +19,8 @@ function App() {
   const [status, setStatus] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [error, setError] = useState('')
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState([])
 
   useEffect(() => {
     loadTodos()
@@ -32,6 +34,7 @@ function App() {
       if (categoryFilter !== 'all') params.category = categoryFilter
       const data = await fetchTodos(params)
       setTodos(data)
+      setSelectedIds([])
     } catch (err) {
       setError(err.message)
     }
@@ -69,6 +72,38 @@ function App() {
     setError('')
     try {
       await deleteTodo(id)
+      loadTodos()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.length === todos.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(todos.map((t) => t.id))
+    }
+  }
+
+  function toggleSelectionMode() {
+    setSelectionMode((prev) => !prev)
+    setSelectedIds([])
+  }
+
+  async function handleBulkDelete() {
+    setError('')
+    if (selectedIds.length === 0) return
+    if (!window.confirm(`選択した${selectedIds.length}件を削除しますか？`)) return
+    try {
+      await bulkDeleteTodos(selectedIds)
+      setSelectionMode(false)
       loadTodos()
     } catch (err) {
       setError(err.message)
@@ -150,6 +185,48 @@ function App() {
           </select>
         </div>
 
+        {todos.length > 0 && (
+          <div className="mb-3 flex items-center justify-between rounded-xl bg-white px-4 py-2 shadow-sm">
+            {selectionMode ? (
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === todos.length}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-400"
+                />
+                すべて選択（{selectedIds.length}件選択中）
+              </label>
+            ) : (
+              <span className="text-sm text-slate-400">
+                チェックで完了/未完了を切り替え
+              </span>
+            )}
+
+            <div className="flex gap-2">
+              {selectionMode && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={selectedIds.length === 0}
+                  className="rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+                >
+                  選択した項目を削除
+                </button>
+              )}
+              <button
+                onClick={toggleSelectionMode}
+                className={
+                  selectionMode
+                    ? 'rounded-lg bg-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-300'
+                    : 'rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-200'
+                }
+              >
+                {selectionMode ? '選択をやめる' : '選択して削除'}
+              </button>
+            </div>
+          </div>
+        )}
+
         <ul className="space-y-2">
           {todos.map((todo) => (
             <li
@@ -159,13 +236,19 @@ function App() {
               <label className="flex flex-1 items-center gap-3">
                 <input
                   type="checkbox"
-                  checked={todo.is_done}
-                  onChange={() => handleToggle(todo)}
-                  className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-400"
+                  checked={selectionMode ? selectedIds.includes(todo.id) : todo.is_done}
+                  onChange={() =>
+                    selectionMode ? toggleSelect(todo.id) : handleToggle(todo)
+                  }
+                  className={
+                    selectionMode
+                      ? 'h-5 w-5 rounded border-slate-300 text-red-500 focus:ring-red-400'
+                      : 'h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-400'
+                  }
                 />
                 <span
                   className={
-                    todo.is_done
+                    !selectionMode && todo.is_done
                       ? 'text-slate-400 line-through'
                       : 'text-slate-800'
                   }
@@ -187,12 +270,14 @@ function App() {
                     期限: {todo.due_date.slice(0, 10)}
                   </span>
                 )}
-                <button
-                  onClick={() => handleDelete(todo.id)}
-                  className="rounded-lg px-2 py-1 text-sm text-red-500 transition hover:bg-red-50"
-                >
-                  削除
-                </button>
+                {!selectionMode && (
+                  <button
+                    onClick={() => handleDelete(todo.id)}
+                    className="rounded-lg px-2 py-1 text-sm text-red-500 transition hover:bg-red-50"
+                  >
+                    削除
+                  </button>
+                )}
               </div>
             </li>
           ))}
